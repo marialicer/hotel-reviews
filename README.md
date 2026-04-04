@@ -8,7 +8,7 @@ Um dos clientes da HospedaAI (uma rede com 8 hotéis no Sul do Brasil) identific
 
 ## Problema de Negócio
 
-A equipe de gestão da rede não sabe o que exatamente está afastando hóspedes — se é limpeza, atendimento, localização, café da manhã ou outro fator. Sem essa informação, qualquer ação de melhoria é baseada em intuição, não em dados.
+A equipe de gestão da rede não sabe o que exatamente está afastando hóspedes (se é limpeza, atendimento, localização, café da manhã ou outro fator). Sem essa informação, qualquer ação de melhoria é baseada em intuição, não em dados.
 
 A HospedaAI foi contratada para automatizar a leitura dessas avaliações e entregar um modelo capaz de classificar o sentimento de cada review, identificando padrões que expliquem a queda no NPS.
 
