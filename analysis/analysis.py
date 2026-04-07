@@ -11,6 +11,7 @@ import nltk
 nltk.download('stopwords')
 nltk.download('punkt')
 nltk.download('punkt_tab')
+nltk.download('vader_lexicon')
 
 from nltk.corpus import stopwords
 from wordcloud import WordCloud
@@ -28,7 +29,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from nltk.sentiment import SentimentIntensityAnalyzer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
 
+from transformers import pipeline
 
 # %%
 
@@ -282,10 +287,10 @@ print(classification_report(y_test, y_pred))
 
 # teste sem balanceamento
 
-model = LogisticRegression()
-model.fit(X_train_tfidf, y_train)
+model_unbalanced = LogisticRegression()
+model_unbalanced.fit(X_train_tfidf, y_train)
 # %%
-y_pred = model.predict(X_test_tfidf)
+y_pred = model_unbalanced.predict(X_test_tfidf)
 # %%
 
 # avaliar o modelo de regressão logistica
@@ -296,7 +301,95 @@ print(accuracy)
 
 print(classification_report(y_test, y_pred))
 
-# Sem balanceamento obtive maior accuracy (94%), mas com perda significativa de recall para a classe negativa
-# Com base no objetivo do negócio, maximizar o recall da classe negativa é mais importante do que a acurácia geral, já que perder avaliações negativas significaria 
+# sem balanceamento obtive maior accuracy (94%), mas com perda significativa de recall para a classe negativa
+# com base no objetivo do negócio, maximizar o recall da classe negativa é mais importante do que a acurácia geral, já que perder avaliações negativas significaria 
 # ignorar potenciais problemas operacionais. Dessa forma, optei por utilizar o modelo com class_weight='balanced'
+# %%
+
+# 6. Comparar abordagens léxico-baseada x supervisionada
+
+sia = SentimentIntensityAnalyzer()
+
+df['vader_score'] = df['Review'].apply(lambda x: sia.polarity_scores(x)['compound'])
+
+df['vader_sentiment'] = df['vader_score'].apply(
+    lambda x: 'Positivo' if x >= 0 else 'Negativo'
+)
+# %%
+
+print(classification_report(df['Sentiment'], df['vader_sentiment']))
+
+# apesar de uma boa acurácia geral (89%), 
+# o modelo apresenta baixo recall para a classe negativa, 
+# falhando em identificar a maioria das avaliações insatisfeitas, 
+# o que compromete seu uso em cenários de monitoramento de qualidade
+
+# %%
+
+# 7. Testar modelos clássicos de ML
+
+# Naive Bayes
+
+nb = MultinomialNB()
+nb.fit(X_train_tfidf, y_train)
+# %%
+
+y_pred = nb.predict(X_test_tfidf)
+
+# %%
+
+# avaliar o modelo naive bayes
+
+print(classification_report(y_test, y_pred))
+
+# %%
+
+#SVM
+
+svm = LinearSVC()
+svm.fit(X_train_tfidf, y_train)
+# %%
+
+y_pred = svm.predict(X_test_tfidf)
+
+# %%
+
+# avaliar o modelo SVM
+
+print(classification_report(y_test, y_pred))
+# %%
+
+# visualizando e comparando o valor do recall dos modelos
+
+recall_neg = {
+    'VADER': 0.42,
+    'Logistic Balanced': 0.92,
+    'Logistic Unbalanced': 0.69,  
+    'Naive Bayes': 0.59,
+    'SVM': 0.76
+}
+
+# %%
+
+# nomes dos modelos
+modelos = list(recall_neg.keys())
+
+# valores de recall
+valores = list(recall_neg.values())
+# %%
+
+plt.figure(figsize=(8,5))
+plt.bar(modelos, valores)
+plt.ylim(0, 1)
+plt.ylabel('Recall Classe Negativa')
+plt.title('Comparação do Recall Negativo por Modelo')
+plt.xticks(rotation=45)
+
+for i, v in enumerate(valores):
+    plt.text(i, v + 0.02, f"{v:.2f}", ha='center')
+
+plt.savefig('../img/comparacao_recall_modelos.png')
+
+plt.show()
+
 # %%
