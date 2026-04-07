@@ -23,7 +23,12 @@ from nltk.stem import WordNetLemmatizer
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+
 
 # %%
 
@@ -57,7 +62,7 @@ df['Rating'].value_counts()
 
 # Criar coluna sentimento no dataset
 
-df['Sentiment'] = df['Rating'].map(lambda x: 'Positivo' if x >= 4 else 'Negativo' if x <= 2 else 'Neutro')
+df['Sentiment'] = df['Rating'].map(lambda x: 'Positivo' if x >= 3 else 'Negativo')
 df['Sentiment'].value_counts()
 # %%
 
@@ -67,7 +72,7 @@ porcentagem_sentimentos = df['Sentiment'].value_counts(normalize=True) * 100
 porcentagem_sentimentos.head()
 # %%
 
-sns.countplot(x='Sentiment', data=df, order=['Positivo', 'Neutro', 'Negativo'])
+sns.countplot(x='Sentiment', data=df, order=['Positivo', 'Negativo'])
 
 ax = plt.gca()
 ax.bar_label(ax.containers[0])
@@ -95,7 +100,7 @@ print(words_sentiment)
 
 # Resultado confirma hipótese:
 # Hóspedes insatisfeitos escrevem mais
-# Reviews negativas têm em média 120 palavras contra 99 das positivas
+# Reviews negativas têm em média 120 palavras contra 101 das positivas
 
 # %%
 
@@ -229,4 +234,69 @@ def preprocess(text):
 
 df['Review_Clean'] = df['Review'].apply(preprocess)
 df[['Review', 'Review_Clean']].head()
+# %%
+
+# 5. Vetorizar e treinar o modelo
+
+X = df['Review_Clean']
+y = df['Sentiment']
+# %%
+
+X_train, X_test, y_train, y_test = train_test_split (
+    X, y, test_size=0.2, random_state=42
+)
+# %%
+
+vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1,2))
+# %%
+
+# fit apenas no treino para evitar data leakage
+
+X_train_tfidf = vectorizer.fit_transform(X_train)
+# %%
+
+X_test_tfidf = vectorizer.transform(X_test)
+# %%
+
+# treinar o modelo
+# a amostra está muito desbalanceada, tratamos o desbalanceamento
+
+model = LogisticRegression(class_weight='balanced')
+model.fit(X_train_tfidf, y_train)
+# %%
+y_pred = model.predict(X_test_tfidf)
+# %%
+
+# avaliar o modelo de regressão logistica
+
+accuracy = accuracy_score(y_test, y_pred)
+print(accuracy)
+# %%
+
+print(classification_report(y_test, y_pred))
+
+# modelo atinge 93% de acurácia, com excelente desempenho na classe positiva e alto recall para negativos.
+# importante para capturar avaliações insatisfeitas
+
+# %%
+
+# teste sem balanceamento
+
+model = LogisticRegression()
+model.fit(X_train_tfidf, y_train)
+# %%
+y_pred = model.predict(X_test_tfidf)
+# %%
+
+# avaliar o modelo de regressão logistica
+
+accuracy = accuracy_score(y_test, y_pred)
+print(accuracy)
+# %%
+
+print(classification_report(y_test, y_pred))
+
+# Sem balanceamento obtive maior accuracy (94%), mas com perda significativa de recall para a classe negativa
+# Com base no objetivo do negócio, maximizar o recall da classe negativa é mais importante do que a acurácia geral, já que perder avaliações negativas significaria 
+# ignorar potenciais problemas operacionais. Dessa forma, optei por utilizar o modelo com class_weight='balanced'
 # %%
