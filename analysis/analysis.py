@@ -393,3 +393,30 @@ plt.savefig('../img/comparacao_recall_modelos.png')
 plt.show()
 
 # %%
+
+# 8. Testar BERT pré-treinado
+
+# criar pipeline
+model = pipeline("sentiment-analysis")
+
+# aplicar no dataset (retorna label e score)
+def get_label(text):
+    result = model(text, truncation=True)[0]
+    # mapear para o padrão do dataset
+    return "Negativo" if result['label'] == 'NEGATIVE' else "Positivo"
+
+# criar coluna com previsão do BERT
+df['bert_sentiment'] = df['Review'].apply(get_label)
+# %%
+df.head()
+# %%
+print(classification_report(df['Sentiment'], df['bert_sentiment']))
+print(accuracy_score(df['Sentiment'], df['bert_sentiment']))
+
+# O modelo baseado em transformer (DistilBERT) apresentou o maior recall para a classe negativa (93%), 
+# demonstrando alta capacidade de identificar avaliações insatisfeitas. 
+# No entanto, apresentou baixa precisão (44%), indicando elevado número de falsos positivos.
+
+# Em cenários onde é crítico não perder clientes insatisfeitos, o uso de modelos baseados em transformers é recomendado
+# Entretanto, para operações que exigem maior eficiência e menor volume de alertas falsos, 
+# modelos como Logistic Regression podem oferecer melhor equilíbrio
