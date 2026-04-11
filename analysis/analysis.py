@@ -357,40 +357,6 @@ y_pred = svm.predict(X_test_tfidf)
 # avaliar o modelo SVM
 
 print(classification_report(y_test, y_pred))
-# %%
-
-# visualizando e comparando o valor do recall dos modelos
-
-recall_neg = {
-    'VADER': 0.42,
-    'Logistic Balanced': 0.92,
-    'Logistic Unbalanced': 0.69,  
-    'Naive Bayes': 0.59,
-    'SVM': 0.76
-}
-
-# %%
-
-# nomes dos modelos
-modelos = list(recall_neg.keys())
-
-# valores de recall
-valores = list(recall_neg.values())
-# %%
-
-plt.figure(figsize=(8,5))
-plt.bar(modelos, valores)
-plt.ylim(0, 1)
-plt.ylabel('Recall Classe Negativa')
-plt.title('Comparação do Recall Negativo por Modelo')
-plt.xticks(rotation=45)
-
-for i, v in enumerate(valores):
-    plt.text(i, v + 0.02, f"{v:.2f}", ha='center')
-
-plt.savefig('../img/comparacao_recall_modelos.png')
-
-plt.show()
 
 # %%
 
@@ -420,3 +386,44 @@ print(accuracy_score(df['Sentiment'], df['bert_sentiment']))
 # Em cenários onde é crítico não perder clientes insatisfeitos, o uso de modelos baseados em transformers é recomendado
 # Entretanto, para operações que exigem maior eficiência e menor volume de alertas falsos, 
 # modelos como Logistic Regression podem oferecer melhor equilíbrio
+
+# %%
+
+# visualizando e comparando o valor do recall dos modelos
+
+recall_neg = {
+    'VADER': 0.42,
+    'Logistic Balanced': 0.92,
+    'Logistic Unbalanced': 0.69,  
+    'Naive Bayes': 0.59,
+    'SVM': 0.76,
+    'BERT': 0.93
+}
+# %%
+
+# nomes dos modelos
+modelos = list(recall_neg.keys())
+
+# valores de recall
+valores = list(recall_neg.values())
+# %%
+
+plt.figure(figsize=(8,5))
+plt.bar(modelos, valores)
+plt.ylim(0, 1)
+plt.ylabel('Recall Classe Negativa')
+plt.title('Capacidade dos Modelos em Detectar Clientes Insatisfeitos (Recall Negativo)')
+plt.xticks(rotation=45)
+
+for i, v in enumerate(valores):
+    plt.text(i, v + 0.02, f"{v:.2f}", ha='center')
+
+plt.savefig('../img/comparacao_recall_modelos.png')
+
+plt.show()
+# %%
+
+#Conclusão da comparação:
+#Para o objetivo da HospedaAI, a Regressão Logística Balanceada continua sendo a melhor escolha,
+# mesmo recall que o BERT, mas com precision muito superior. 
+# Além de ter sido treinada nos próprios dados do problema.
