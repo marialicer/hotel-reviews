@@ -24,10 +24,10 @@ A HospedaAI foi contratada para automatizar a leitura dessas avaliações e entr
 
 ## Dataset
 
-- **Fonte:** [Trip Advisor Hotel Reviews — Kaggle](https://www.kaggle.com/datasets/andrewmvd/trip-advisor-hotel-reviews)
+- **Fonte:** [Trip Advisor Hotel Reviews - Kaggle](https://www.kaggle.com/datasets/andrewmvd/trip-advisor-hotel-reviews)
 - **Volume:** ~20.000 avaliações em inglês
 - **Colunas:** `Review` (texto da avaliação) e `Rating` (nota de 1 a 5 estrelas)
-- **Tarefa:** Classificação binária de sentimento — Positivo (ratings 3, 4 e 5) e Negativo (ratings 1 e 2)
+- **Tarefa:** Classificação binária de sentimento - Positivo (ratings 3, 4 e 5) e Negativo (ratings 1 e 2)
 
 ---
 
